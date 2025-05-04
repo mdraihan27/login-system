@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 
@@ -55,20 +56,21 @@ public class EmailService {
                 "</html>";
     }
 
-        public ResponseEntity<?> sendEmail(String to, String subject, String verificationCode) {
-            try {
-                MimeMessage message = javaMailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    @Transactional
+    public ResponseEntity<?> sendEmail(String to, String subject, String verificationCode) {
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-                helper.setTo(to);
-                helper.setSubject(subject);
-                helper.setText(emailBodyHtml(verificationCode), true); // 'true' enables HTML
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(emailBodyHtml(verificationCode), true); // 'true' enables HTML
 
-                javaMailSender.send(message);
-                return ResponseEntity.ok().build();
-            } catch (Exception e) {
-                log.error("Exception while sending email", e);
-                return ResponseEntity.badRequest().build();
-            }
+            javaMailSender.send(message);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("Exception while sending email", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

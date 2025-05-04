@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class UserService {
         }
     }
 
+//    @Transactional
     public UserEntity createUser(UserEntity userEntity) {
         try{
             userEntity.setEnabled(true);
@@ -75,6 +77,8 @@ public class UserService {
             }
         }catch (Exception e){
             log.error(e.getMessage());
+            //Exception needs to be thrown if @Transactional is used, to make transaction manager aware that it needs to rollback
+//            throw new Exception("Something went wrong while signing up user");
             return null;
         }
     }

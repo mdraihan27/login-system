@@ -11,6 +11,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -30,8 +32,9 @@ public class AccountController {
     @Autowired
     private UserDetailsService userDetailsService;
 
+//    @Transactional
     @PostMapping("signup")
-    public ResponseEntity<String> signup (@RequestBody UserEntity userEntity) {
+    public ResponseEntity<String> signup (@RequestBody UserEntity userEntity) throws Exception {
         try{
             if(!userEntity.getEmail().isEmpty() && !userEntity.getPassword().isEmpty() && !userEntity.getEmail().isEmpty()
                     && !userEntity.getFirstName().isEmpty() && !userEntity.getLastName().isEmpty() ){
@@ -55,15 +58,18 @@ public class AccountController {
             }
         }catch (Exception e) {
             log.error(e.getMessage());
+            //Exception needs to be thrown if @Transactional is used, to make transaction manager aware that it needs to rollback
+//            throw new Exception("Something went wrong while signing up user");
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    @GetMapping("login-username")
-    public ResponseEntity<String> login (@RequestParam("username") String username, @RequestParam("password") String password) {
+
+    @GetMapping("login")
+    public ResponseEntity<String> login (@RequestParam("emailOrUsername") String emailOrUsername, @RequestParam("password") String password, @RequestParam("userinfoType") String userinfoType) {
         try{
-            if(!username.isEmpty() && !password.isEmpty()) {
-               return checkAuthAndGenerateJwt(username, password);
+            if(!emailOrUsername.isEmpty() && !password.isEmpty() && !userinfoType.isEmpty()) {
+               return checkAuthAndGenerateJwt(emailOrUsername, password, userinfoType);
 
             }else{
                 return ResponseEntity.badRequest().build();
@@ -74,28 +80,44 @@ public class AccountController {
         }
     }
 
-    @GetMapping("login-email")
-    public ResponseEntity<String> loginEmail (@RequestParam("email") String email, @RequestParam("password") String password) {
+//    @GetMapping("login-email")
+//    public ResponseEntity<String> loginEmail (@RequestParam("email") String email, @RequestParam("password") String password) {
+//        try{
+//            if(!email.isEmpty() && !password.isEmpty()) {
+//                UserEntity userEntity = userService.findUser(email, "email").getBody();
+//                if(userEntity != null) {
+//                    return checkAuthAndGenerateJwt(userEntity.getUsername(), password);
+//                }else{
+//                    return ResponseEntity.badRequest().build();
+//                }
+//
+//            }else{
+//                return ResponseEntity.badRequest().build();
+//            }
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//            return ResponseEntity.internalServerError().build();
+//        }
+//    }
+
+
+
+    private ResponseEntity<String> checkAuthAndGenerateJwt(String emailOrUsername, String password, String userinfoType) {
+
         try{
-            if(!email.isEmpty() && !password.isEmpty()) {
-                UserEntity userEntity = userService.findUser(email, "email").getBody();
-                if(userEntity != null) {
-                    return checkAuthAndGenerateJwt(userEntity.getUsername(), password);
+            String username;
+            if(userinfoType.equals("email")){
+                ResponseEntity<UserEntity> response1 = userService.findUser(emailOrUsername, "email");
+                if(response1.getStatusCode().equals(HttpStatus.OK)) {
+                    username = response1.getBody().getUsername();
                 }else{
                     return ResponseEntity.badRequest().build();
                 }
-
+            }else if(userinfoType.equals("username")){
+                username = emailOrUsername;
             }else{
                 return ResponseEntity.badRequest().build();
             }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    private ResponseEntity<String> checkAuthAndGenerateJwt(String username, String password) {
-        try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );

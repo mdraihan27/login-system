@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class UserVerificationService {
+public class ForgotPasswordService {
 
     @Autowired
     private EmailService emailService;
@@ -23,7 +23,7 @@ public class UserVerificationService {
     private UserRepository userRepository;
 
 
-    public ResponseEntity sendVerificationCode(UserEntity userEntity) {
+    public ResponseEntity sendForgotPasswordVerificationCode(UserEntity userEntity) {
         try{
             String verificationCode = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
             emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode);
@@ -37,25 +37,25 @@ public class UserVerificationService {
         }
     }
 
-
-    public ResponseEntity verifyVerificationCode(UserEntity userEntity, String verificationCode) {
-        try{
-            if(!userEntity.getVerificationCode().equals("") && userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isAfter(Instant.now())){
-                userEntity.setVerificationCode("");
-                userEntity.setVerified(true);
-                userRepository.save(userEntity);
-
-                return ResponseEntity.ok().build();
-
-            }else if(userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isBefore(Instant.now())){
-                return ResponseEntity.unprocessableEntity().build();
-
-            }else{
-                return ResponseEntity.badRequest().build();
-            }
-        }catch (Exception e){
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
-    }
+//    @Transactional
+//    public ResponseEntity verifyForgotPasswordVerificationCode(UserEntity userEntity, String verificationCode) {
+//        try{
+//            if(userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isAfter(Instant.now())){
+//                userEntity.setVerificationCode("");
+//                userEntity.setVerified(true);
+//                userRepository.save(userEntity);
+//
+//                return ResponseEntity.ok().build();
+//
+//            }else if(userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isBefore(Instant.now())){
+//                return ResponseEntity.unprocessableEntity().build();
+//
+//            }else{
+//                return ResponseEntity.badRequest().build();
+//            }
+//        }catch (Exception e){
+//            log.error(e.getMessage());
+//            return ResponseEntity.internalServerError().build();
+//        }
+//    }
 }
