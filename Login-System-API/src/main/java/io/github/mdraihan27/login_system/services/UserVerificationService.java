@@ -23,39 +23,33 @@ public class UserVerificationService {
     private UserRepository userRepository;
 
 
-    public ResponseEntity sendVerificationCode(UserEntity userEntity) {
-        try{
-            String verificationCode = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
-            emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode);
-            userEntity.setVerificationCode(verificationCode);
-            userEntity.setVerificationCodeExpirationTime(Instant.now().plus(Duration.ofMinutes(5)));
-            userRepository.save(userEntity);
-            return ResponseEntity.ok().build();
-        }catch (Exception e){
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity sendVerificationCode(UserEntity userEntity) throws Exception {
+
+        String verificationCode = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
+        emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode);
+        userEntity.setVerificationCode(verificationCode);
+        userEntity.setVerificationCodeExpirationTime(Instant.now().plus(Duration.ofMinutes(5)));
+        userRepository.save(userEntity);
+        return ResponseEntity.ok().build();
+
     }
 
 
-    public ResponseEntity verifyVerificationCode(UserEntity userEntity, String verificationCode) {
-        try{
-            if(!userEntity.getVerificationCode().equals("") && userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isAfter(Instant.now())){
-                userEntity.setVerificationCode("");
-                userEntity.setVerified(true);
-                userRepository.save(userEntity);
+    public ResponseEntity verifyVerificationCode(UserEntity userEntity, String verificationCode) throws Exception {
 
-                return ResponseEntity.ok().build();
+        if(!userEntity.getVerificationCode().equals("") && userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isAfter(Instant.now())){
+            userEntity.setVerificationCode("");
+            userEntity.setVerified(true);
+            userRepository.save(userEntity);
 
-            }else if(userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isBefore(Instant.now())){
-                return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.ok().build();
 
-            }else{
-                return ResponseEntity.badRequest().build();
-            }
-        }catch (Exception e){
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().build();
+        }else if(userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isBefore(Instant.now())){
+            return ResponseEntity.unprocessableEntity().build();
+
+        }else{
+            return ResponseEntity.badRequest().build();
         }
+
     }
 }

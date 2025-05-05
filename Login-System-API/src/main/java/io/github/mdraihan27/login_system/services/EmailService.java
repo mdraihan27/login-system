@@ -1,5 +1,6 @@
 package io.github.mdraihan27.login_system.services;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,20 +58,16 @@ public class EmailService {
     }
 
     @Transactional
-    public ResponseEntity<?> sendEmail(String to, String subject, String verificationCode) {
-        try {
-            MimeMessage message = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    public ResponseEntity<?> sendEmail(String to, String subject, String verificationCode) throws MessagingException {
 
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(emailBodyHtml(verificationCode), true); // 'true' enables HTML
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            javaMailSender.send(message);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            log.error("Exception while sending email", e);
-            return ResponseEntity.badRequest().build();
-        }
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(emailBodyHtml(verificationCode), true); // 'true' enables HTML
+
+        javaMailSender.send(message);
+        return ResponseEntity.ok().build();
     }
 }

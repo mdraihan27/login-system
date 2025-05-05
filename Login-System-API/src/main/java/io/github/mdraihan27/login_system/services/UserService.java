@@ -27,60 +27,50 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public ResponseEntity<UserEntity> findUser(String userinfo, String infoType) {
+    public ResponseEntity<UserEntity> findUser(String userinfo, String infoType) throws Exception {
 
-        try{
-            Optional<UserEntity> user;
+        Optional<UserEntity> user;
 
-            if(infoType.equals("email")){
-                user = userRepository.findByEmail(userinfo);
-            }else if(infoType.equals("username")){
-                user = userRepository.findByUsername(userinfo);
-            }else if(infoType.equals("id")){
-                user = userRepository.findById(userinfo);
-            }else{
-                throw new Exception("User info type is not valid");
-            }
-
-            if(user.isPresent()){
-                return ResponseEntity.ok(user.get());
-            }else{
-                return ResponseEntity.notFound().build();
-            }
-
-        }catch (Exception e){
-
-            log.error(e.getMessage());
-            return ResponseEntity.notFound().build();
-
+        if(infoType.equals("email")){
+            user = userRepository.findByEmail(userinfo);
+        }else if(infoType.equals("username")){
+            user = userRepository.findByUsername(userinfo);
+        }else if(infoType.equals("id")){
+            user = userRepository.findById(userinfo);
+        }else{
+            throw new Exception("User info type is not valid");
         }
+
+        if(user.isPresent()){
+            return ResponseEntity.ok(user.get());
+        }else{
+            return ResponseEntity.notFound().build();
+        }
+
+
+
     }
 
 //    @Transactional
-    public UserEntity createUser(UserEntity userEntity) {
-        try{
-            userEntity.setEnabled(true);
-            userEntity.setId(UUID.randomUUID().toString().replace("-", ""));
-            userEntity.setVerified(false);
-            userEntity.setVerificationCode("");
-            userEntity.setVerificationCodeExpirationTime(Instant.now());
-            userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-            ArrayList<String> roles = userEntity.getRoles();
-            roles.add("USER");
-            userEntity.setRoles(roles);
-            UserEntity createdUser = userRepository.save(userEntity);
+    public UserEntity createUser(UserEntity userEntity) throws Exception{
 
-            if(createdUser != null){
-                return createdUser;
-            }else{
-                return null;
-            }
-        }catch (Exception e){
-            log.error(e.getMessage());
-            //Exception needs to be thrown if @Transactional is used, to make transaction manager aware that it needs to rollback
-//            throw new Exception("Something went wrong while signing up user");
+        userEntity.setEnabled(true);
+        userEntity.setId(UUID.randomUUID().toString().replace("-", ""));
+        userEntity.setVerified(false);
+        userEntity.setVerificationCode("");
+        userEntity.setVerificationCodeExpirationTime(Instant.now());
+        userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        ArrayList<String> roles = userEntity.getRoles();
+        roles.add("USER");
+        userEntity.setRoles(roles);
+        UserEntity createdUser = userRepository.save(userEntity);
+
+        if(createdUser != null){
+            return createdUser;
+        }else{
             return null;
         }
+
     }
 
 

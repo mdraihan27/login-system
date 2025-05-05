@@ -23,18 +23,15 @@ public class ForgotPasswordService {
     private UserRepository userRepository;
 
 
-    public ResponseEntity sendForgotPasswordVerificationCode(UserEntity userEntity) {
-        try{
-            String verificationCode = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
-            emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode);
-            userEntity.setVerificationCode(verificationCode);
-            userEntity.setVerificationCodeExpirationTime(Instant.now().plus(Duration.ofMinutes(5)));
-            userRepository.save(userEntity);
-            return ResponseEntity.ok().build();
-        }catch (Exception e){
-            log.error(e.getMessage());
-            return ResponseEntity.internalServerError().build();
-        }
+    public ResponseEntity sendForgotPasswordVerificationCode(UserEntity userEntity) throws Exception {
+
+        String verificationCode = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
+        emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode);
+        userEntity.setVerificationCode(verificationCode);
+        userEntity.setVerificationCodeExpirationTime(Instant.now().plus(Duration.ofMinutes(5)));
+        userRepository.save(userEntity);
+        return ResponseEntity.ok().build();
+
     }
 
 //    @Transactional
