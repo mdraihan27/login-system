@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/public")
+
 public class AccountController {
 
     @Autowired
@@ -33,7 +33,7 @@ public class AccountController {
     private UserDetailsService userDetailsService;
 
 //    @Transactional
-    @PostMapping("signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<String> signup (@RequestBody UserEntity userEntity) throws Exception {
         try{
             if(!userEntity.getEmail().isEmpty() && !userEntity.getPassword().isEmpty() && !userEntity.getEmail().isEmpty()
@@ -48,7 +48,7 @@ public class AccountController {
 
                 UserEntity createdUser = userService.createUser(userEntity);
                 if(createdUser != null) {
-                    String jwt = jwtUtil.generateToken(createdUser.getUsername());
+                    String jwt = jwtUtil.generateToken(createdUser.getUsername(), false);
                     return ResponseEntity.ok(jwt);
                 }else {
                     return ResponseEntity.internalServerError().build();
@@ -65,7 +65,7 @@ public class AccountController {
     }
 
 
-    @GetMapping("login")
+    @GetMapping("/auth/login")
     public ResponseEntity<String> login (@RequestParam("emailOrUsername") String emailOrUsername, @RequestParam("password") String password, @RequestParam("userinfoType") String userinfoType) {
         try{
             if(!emailOrUsername.isEmpty() && !password.isEmpty() && !userinfoType.isEmpty()) {
@@ -122,7 +122,7 @@ public class AccountController {
                     new UsernamePasswordAuthenticationToken(username, password)
             );
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            String jwt = jwtUtil.generateToken(userDetails.getUsername());
+            String jwt = jwtUtil.generateToken(userDetails.getUsername(), false);
             if(jwt != null) {
                 return ResponseEntity.ok(jwt);
             }else{

@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -14,7 +13,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class UserVerificationService {
+public class EmailVerificationService {
 
     @Autowired
     private EmailService emailService;
@@ -23,10 +22,10 @@ public class UserVerificationService {
     private UserRepository userRepository;
 
 
-    public ResponseEntity sendVerificationCode(UserEntity userEntity) throws Exception {
+    public ResponseEntity sendEmailVerificationCode(UserEntity userEntity) throws Exception {
 
         String verificationCode = UUID.randomUUID().toString().replace("-", "").substring(0, 5);
-        emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode);
+        emailService.sendEmail(userEntity.getEmail(), "Your verification Code", verificationCode, "Use this code to verify your email address");
         userEntity.setVerificationCode(verificationCode);
         userEntity.setVerificationCodeExpirationTime(Instant.now().plus(Duration.ofMinutes(5)));
         userRepository.save(userEntity);
@@ -35,7 +34,7 @@ public class UserVerificationService {
     }
 
 
-    public ResponseEntity verifyVerificationCode(UserEntity userEntity, String verificationCode) throws Exception {
+    public ResponseEntity verifyEmailVerificationCode(UserEntity userEntity, String verificationCode) throws Exception {
 
         if(!userEntity.getVerificationCode().equals("") && userEntity.getVerificationCode().equals(verificationCode) && userEntity.getVerificationCodeExpirationTime().isAfter(Instant.now())){
             userEntity.setVerificationCode("");

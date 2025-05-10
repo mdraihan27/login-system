@@ -17,7 +17,7 @@ public class IpRateLimitFilter extends OncePerRequestFilter {
     private final ConcurrentHashMap<String, Bucket> ipBuckets = new ConcurrentHashMap<>();
 
     private Bucket createNewBucket() {
-        Bandwidth limit = Bandwidth.classic(1, Refill.intervally(1, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.classic(30, Refill.intervally(30, Duration.ofMinutes(1)));
         return Bucket4j.builder().addLimit(limit).build();
     }
 

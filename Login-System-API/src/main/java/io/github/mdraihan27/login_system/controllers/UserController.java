@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/user")
+
 public class UserController {
 
     @Autowired
@@ -21,7 +21,7 @@ public class UserController {
     @Autowired
     private GetAuthenticatedUser getAuthenticatedUser;
 
-    @GetMapping("logged-in-user-info")
+    @GetMapping("/user/logged-in-user-info")
     public ResponseEntity<UserEntity> getLoggedInUserInfo() {
         try{
             Optional<UserEntity> authenticatedUser =  getAuthenticatedUser.GetAuthenticatedUser();
@@ -36,7 +36,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("{username}")
+    @GetMapping("user/{username}")
     public ResponseEntity<UserEntity> getUserInfo(@PathVariable String username) {
         try{
             return userService.findUser(username, "username");

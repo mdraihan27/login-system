@@ -20,7 +20,7 @@ public class EmailService {
     private JavaMailSender javaMailSender;
 
 
-    private String emailBodyHtml(String verificationCode) {
+    private String emailBodyHtml(String verificationCode, String verificationMessage) {
         return "<!DOCTYPE html>" +
                 "<html>" +
                 "<head>" +
@@ -45,9 +45,9 @@ public class EmailService {
                 "</div>" +
                 "<div class='content'>" +
                 "<p>Hello,</p>" +
-                "<p>Use the code below to verify your email address:</p>" +
+                "<p>"+verificationMessage+"</p>" +
                 "<div class='code-box'>" + verificationCode + "</div>" +
-                "<p>This code will expire shortly. If you did not request this, feel free to ignore the email.</p>" +
+                "<p>This code will expire in 5 minutes. If you did not request this, feel free to ignore the email.</p>" +
                 "</div>" +
                 "<div class='footer'>" +
                 "&copy; github.com/mdraihan27 — All rights reserved." +
@@ -58,14 +58,14 @@ public class EmailService {
     }
 
     @Transactional
-    public ResponseEntity<?> sendEmail(String to, String subject, String verificationCode) throws MessagingException {
+    public ResponseEntity<?> sendEmail(String to, String subject, String verificationCode, String verificationMessage) throws MessagingException {
 
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo(to);
         helper.setSubject(subject);
-        helper.setText(emailBodyHtml(verificationCode), true); // 'true' enables HTML
+        helper.setText(emailBodyHtml(verificationCode, verificationMessage), true); // 'true' enables HTML
 
         javaMailSender.send(message);
         return ResponseEntity.ok().build();
